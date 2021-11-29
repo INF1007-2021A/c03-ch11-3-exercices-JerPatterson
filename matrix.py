@@ -7,6 +7,7 @@ import numbers
 import copy
 import collections
 import collections.abc
+import numpy as np
 
 
 class Matrix:
@@ -18,7 +19,7 @@ class Matrix:
 	:param data: Si une liste, alors les données elles-mêmes (affectées, pas copiées). Si un nombre, alors la valeur de remplissage
 	"""
 
-	def __init__(self, height, width, data = 0.0):
+	def __init__(self, height: int, width: int, data: float = 0.0) -> None:
 		if not isinstance(height, numbers.Integral) or not isinstance(width, numbers.Integral):
 			raise TypeError()
 		if height == 0 or width == 0:
@@ -30,7 +31,7 @@ class Matrix:
 				raise ValueError(list)
 			self.__data = data
 		elif isinstance(data, numbers.Number):
-			self.__data = [data for i in range(len(self))]
+			self.__data = [data for _ in range(len(self))]
 		else:
 			raise TypeError()
 
@@ -46,8 +47,7 @@ class Matrix:
 	def data(self):
 		return self.__data
 
-	# TODO: Accès à un élément en lecture
-	def TODO(TODO):
+	def __getitem__(self, indexes: tuple) -> float:
 		"""
 		Indexation rangée-major
 
@@ -57,10 +57,10 @@ class Matrix:
 			raise IndexError()
 		if indexes[0] >= self.height or indexes[1] >= self.width:
 			raise IndexError()
-		# TODO: Retourner la valeur
+		
+		return self.data[indexes[0] * self.width + indexes[1]]
 
-	# TODO: Affectation à un élément
-	def TODO(TODO):
+	def __setitem__(self, indexes: tuple, value: float) -> None:
 		"""
 		Indexation rangée-major
 
@@ -70,7 +70,7 @@ class Matrix:
 			raise IndexError()
 		if indexes[0] >= self.height or indexes[1] >= self.width:
 			raise IndexError()
-		# TODO: L'affectation
+		self.data[indexes[0] * self.width + indexes[1]] = value
 
 	def __len__(self):
 		"""
@@ -78,20 +78,24 @@ class Matrix:
 		"""
 		return self.height * self.width
 
-	# TODO: Représentation affichable (conversion pour print)
-	def TODO(TODO):
-		# TODO: Chaque rangée est sur une ligne, avec chaque élément séparé d'un espace.
-		pass
+	def __str__(self):
+		return format(self, "")
 
-	# TODO: Représentation officielle
-	def TODO(TODO):
-		# TODO: une string qui représente une expression pour construire l'objet.
-		pass
+	# Représentation officielle
+	def __repr__(self):
+		# Une string qui représente une expression pour construire l'objet.
+		return f"Matrice({self.height}, {self.width}, {self.data.__repr__()})"
 
-	# TODO: String formatée
-	def TODO(TODO):
-		# TODO: On veut pouvoir dir comment chaque élément doit être formaté en passant la spécification de formatage qu'on passerait à `format()`
-		pass
+	# String formatée
+	def __format__(self, format_spec: str):
+		# On veut pouvoir dire comment chaque élément doit être formaté en passant la spécification de formatage qu'on passerait à `format()`
+		matrix_row = []
+		for row in range(self.height):
+			values = [format(self[row, index], format_spec) for index in range(self.width)]
+			matrix_row.append(" ".join(values))
+		
+		return "\n".join(matrix_row)
+
 
 	def clone(self):
 		return Matrix(self.height, self.width, self.data)
@@ -105,41 +109,75 @@ class Matrix:
 	def __pos__(self):
 		return self.copy()
 
-	# TODO: Négation
-	def TODO(TODO):
-		pass
+	# Négation
+	def __neg__(self) -> 'Matrix':
+		data = []
+		for row in range(self.height):
+			for index in range(self.width):
+				data.append(self[row, index] * -1)
 
-	# TODO: Addition
-	def TODO(TODO):
-		pass
+		return Matrix(self.height, self.width, data)
+
+	# Addition
+	def __add__(self, other: 'Matrix') -> 'Matrix':
+		data = []
+		for row in range(self.height):
+			for index in range(self.width):
+				data.append(self[row, index] + other[row, index])
+
+		return Matrix(self.height, self.width, data)
 	
-	# TODO: Soustraction
-	def TODO(TODO):
-		pass
+	# Soustraction
+	def __sub__(self, other: 'Matrix') -> 'Matrix':
+		data = []
+		for row in range(self.height):
+			for index in range(self.width):
+				data = self[row, index] - other[row, index]
+		
+		return Matrix(self.height, self.width, data)
 	
-	# TODO: Multiplication matricielle/scalaire
-	def TODO(TODO):
+	# Multiplication matricielle/scalaire
+	def __mul__(self, other) -> 'Matrix':
 		if isinstance(other, Matrix):
-			# TODO: Multiplication matricielle.
+			#  Multiplication matricielle.
 			# Rappel de l'algorithme simple pour C = A * B, où A, B sont matrices compatibles (hauteur_A = largeur_B)
 			# C = Matrice(hauteur_A, largeur_B)
 			# Pour i dans [0, hauteur_C[
 				# Pour j dans [0, largeur_C[
 					# Pour k dans [0, largeur_A[
 						# C(i, j) = A(i, k) * B(k, j)
-			pass
+			data = []
+			for i in range(self.height):
+				for j in range(other.width):
+					result = 0
+					for k in range(self.width):
+						result += self[i, k] * other[k, j]
+					data.append(result)
+
+			return Matrix(self.height, other.width, data)
+
 		elif isinstance(other, numbers.Number):
-			# TODO: Multiplication scalaire.
-			pass
+			# Multiplication scalaire.
+			data = []
+			for row in range(self.height):
+				for index in range(self.width):
+					data.append(self[row, index] * other)
+		
+			return Matrix(self.height, self.width, data)
+
 		else:
 			raise TypeError()
 
-	# TODO: Multiplication scalaire avec le scalaire à gauche
+	# Multiplication scalaire avec le scalaire à gauche
+	def __rmul__(self, other: 'Matrix') -> 'Matrix':
+		return self * other
 
-	def __abs__(self):
+	def __abs__(self) -> 'Matrix':
 		return Matrix(self.height, self.width, [abs(e) for e in self.data])
 
-	# TODO: Égalité entre deux matrices
+	# Égalité entre deux matrices
+	def __eq__(self, other: 'Matrix') -> bool:
+		return self is other or (self.height, self.width, self.data) == (other.height, other.width, other.data)
 
 	@classmethod
 	def identity(cls, width):
