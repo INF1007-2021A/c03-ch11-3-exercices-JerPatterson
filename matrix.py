@@ -7,7 +7,6 @@ import numbers
 import copy
 import collections
 import collections.abc
-import numpy as np
 
 
 class Matrix:

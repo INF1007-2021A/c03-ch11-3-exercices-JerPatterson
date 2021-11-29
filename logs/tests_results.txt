@@ -1,0 +1,12 @@
+test_add_valid (__main__.TestMatrix) ... ok
+test_get_valid (__main__.TestMatrix) ... ok
+test_init_invalid (__main__.TestMatrix) ... ok
+test_init_valid (__main__.TestMatrix) ... ok
+test_mul_valid (__main__.TestMatrix) ... ok
+test_properties (__main__.TestMatrix) ... ok
+test_set_valid (__main__.TestMatrix) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+OK
