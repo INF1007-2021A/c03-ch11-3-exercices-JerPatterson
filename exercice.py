@@ -73,5 +73,5 @@ def main():
 	print(foo * 10)
 
 if __name__ == "__main__":
-	main()
+	main() #test
 
